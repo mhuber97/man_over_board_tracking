@@ -1,40 +1,59 @@
 function [height] = gethorizonheight(frame)
-    line_feature = fibermetric(frame, 2);
-    
-    % threshold to find line_elments 
-    P =100*(1 - 25/256);                                      % percentile: fraction of line elements is 25/256
-    Tr = prctile(line_feature,P,[1,2]);                       % define threshold
-    line_element_map = line_feature>Tr;                       % threshold
-    
-    % find line segments with minimum length - approach:
-    % - apply template matching for orientation and positions
-    len = 200;                                           % minimum lenght of line segment
-    imacc = false(size(frame));                            % initialize with empty accu array
-    line_element_map = imdilate(line_element_map,[0 1 0; 0 1 0; 0 0 0]);    % first, dilage a little bit
-    % loop over all angles:
-    deg=180;
-    bline1 = strel('line',len,deg);                  % create a structuring element with angulated line segment
-    bline2 = strel('line',len+4,deg);                  % create a structuring element with angulated line segment
-    imdir = imdilate(imerode(line_element_map,bline1),bline2);  % apply opening: 
-    imacc = imacc | imdir;   
-    imskel = bwmorph(imacc,'spur',7);
-    imskel = bwmorph(imskel,'spur',7);
+    % Since the video was stabilized before, we crop the frame to avoid
+    % edges of the frame to be detected as the horizon. Thus, we define a
+    % border that defines the main part of the image that we want to
+    % consider for the horizon detection.
 
-    unsolved=true;
-    x_i = 1;
-    height = NaN;
-    while x_i < length(frame) && unsolved
-        result = find(imskel(:,x_i)==1);
-        if result > 0
-            for s=1:length(result)
-                if frame(result(s), x_i) > 0 && result(s) > 70
-                    height = result(s);
-                    disp(height);
-                    unsolved=false;
-                    break;
-                end
-            end
-        end
-        x_i = x_i + 1;
+    border = 40;
+    frame = frame(border:size(frame, 1)-border, border:size(frame, 2)-border);
+
+    sigma1 = 0.02;
+    sigma2 = 0.0016;
+    frame_i = im2gray(frame);
+    frame = ut_edge(frame_i, 'c', 's', 3, 'h', [sigma1, sigma2]);
+    frame = mat2gray(frame);
+
+    % We dilate the lines first only horizontally, in order to connect
+    % possibly unconnected lines.
+    SE = [1 1 1];
+    for i=1:15
+        frame = imdilate(frame, SE);
     end
+
+    % Furthermore, we also dilate the lines a little bit vertically to
+    % connect close lines.
+    SE = [0 1 0; 1 1 1; 0 1 0];
+    for i=1:4
+        frame = imdilate(frame, SE);
+    end
+
+    % Apply hough transform
+    [H, T, R] = hough(frame,'RhoResolution',1,'Theta',-90:0.5:89);
+
+    P = houghpeaks(H, 5,'threshold',ceil(0.3*max(H(:))));
+
+    lines = houghlines(frame, T, R, P, 'MinLength', 7, 'FillGap', 5);
+
+    max_len = 0;
+    % We now look for the longest detected line in the image that must be 
+    % the horizon.
+    for k = 1:length(lines)
+        
+        p1 = lines(k).point1;
+        p2 = lines(k).point2;
+        theta = lines(k).theta;
+        line_length = norm(p1 - p2);
+        
+        % We only examine lines that have an absolute theta value over 70
+        % what includes all lines that are nearly horizontal and excludes
+        % all vertical lines. Furthermore, we only want lines that are more
+        % or less in the vertical center of the image, so we exclude 
+        if (line_length > max_len) && (p1(2) > 30) && (p2(2) > 30) && (abs(theta) > 70)
+            max_len = line_length;
+            longest_line = [p1; p2];
+        end
+
+    end
+    % Take height of the center of the line
+    height = (longest_line(1, 2) + longest_line(2,2))/2 + border; 
 end
