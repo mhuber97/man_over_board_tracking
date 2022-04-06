@@ -6,6 +6,6 @@ In order to run the project properly we must have the video of the buoy with the
 
 First of all we must calibrate the video and remove distortion with it. This can be done with the file [camera_calibration.m](./camera_calibration.m) which outputs the file `calibrated_video.avi`.
 
-The next step is to stabilize the video with the script [stabilization.m](./stabilization.m) that outputs the file `stabilized_video.avi`. 
+The next step is to stabilize the video with the script [stabilizing.m](./stabilizing.m) that outputs the file `stabilized_video.avi`. 
 
-This is used in the script [tracking_buoy.m](./tracking_buoy.m) to track the buoy and measure the distance to it. The final video is called `tracked_buoy.avi`.
+This is used in the script [point_tracker.m](./point_tracker.m) to track the buoy and measure the distance to it. The final video is called `tracked_buoy.avi`.
