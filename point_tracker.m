@@ -27,9 +27,12 @@ readFrame(hVideoSrc);readFrame(hVideoSrc);readFrame(hVideoSrc);readFrame(hVideoS
 % Read first frame
 first_frame = im2single(readFrame(hVideoSrc));
 
-% initial coordinates of the buoy
-x = 667;
-y = 511;
+% Approximated initial coordinates of the buoy
+x_old = 667;
+y_old = 511;
+
+% Detect the buoy in the area of interest
+[x, y] = re_track_buoy(first_frame, x_old, y_old);
 
 % initialize point tracker
 tracker = vision.PointTracker('MaxBidirectionalError', 1, 'BlockSize', [9, 9]);
