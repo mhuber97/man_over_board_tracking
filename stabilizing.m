@@ -44,6 +44,11 @@ Offset = [0 0];
 Target = zeros(1,2);
 firstTime = true;
 
+%load the principal point from the camera calibration
+cp = load("cameraParams.mat");
+principal_point_origin = cp.cameraParams.PrincipalPoint;
+principal_point_list = [];
+
 %% Stream Processing Loop
 for t=1:433 %Loops for every frame of the video
     while hasFrame(hVideoSource) %While there are still frames
@@ -68,6 +73,10 @@ for t=1:433 %Loops for every frame of the video
 
         Stabilized = imtranslate(input, Offset, 'linear');
     
+        % track where the principal point moves after the applying the
+        % stabilizing transformation
+        principal_point_list(length(principal_point_list) + 1, :) = principal_point_origin + Offset;
+
         Target = Stabilized(TargetRowIndices, TargetColIndices);
 
         % Add black border for display
@@ -85,4 +94,8 @@ for t=1:433 %Loops for every frame of the video
         writeVideo(a,Stabilized); %Writes stabilized video to video file
     end
 end
+
+% save the list of the principal point in each frame
+save('principal_point_list.mat','principal_point_list');
+
 close(a);

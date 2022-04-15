@@ -21,6 +21,10 @@ camera_height = 2.5;
 focal_length = cp.cameraParams.FocalLength;
 principal_point = cp.cameraParams.PrincipalPoint;
 
+% read the principal point list that defines the principal point at each
+% frame. It is needed for the distance measurement.
+principal_point_list = load("principal_point_list.mat").principal_point_list;
+
 % skipping the first few frames where the buoy is not seeable
 readFrame(hVideoSrc);readFrame(hVideoSrc);readFrame(hVideoSrc);readFrame(hVideoSrc);
 
@@ -40,7 +44,7 @@ height_history = [];
 horizon_height_buffer_size = 10;
 
 distances = [];
-
+counter = 5; %start at 5 since 5 frames are already read
 while hasFrame(hVideoSrc)
     % If in the previous iteration the buoy was not detected by the point
     % tracker, we use blob analysis to re-track it. If this gives us a
@@ -60,7 +64,7 @@ while hasFrame(hVideoSrc)
             height_history(length(height_history)+1) = horizon_height;
             cleaned_horizon_height = get_stable_horizon(height_history, horizon_height_buffer_size);
             disp(cleaned_horizon_height);
-            distance = calculate_distance(focal_length, principal_point, [x, y], camera_height, cleaned_horizon_height);
+            distance = calculate_distance(focal_length, principal_point_list(counter,:), [x, y], camera_height, cleaned_horizon_height);
             distances(length(distances)+1) = distance;
             
             out = insertText(out, [100 100], distance + " m", 'FontSize', 24);
@@ -88,7 +92,7 @@ while hasFrame(hVideoSrc)
         height_history(length(height_history)+1) = horizon_height;
         cleaned_horizon_height = get_stable_horizon(height_history, horizon_height_buffer_size);
         disp(cleaned_horizon_height);
-        distance = calculate_distance(focal_length, principal_point, points(validity, :), camera_height, cleaned_horizon_height);
+        distance = calculate_distance(focal_length, principal_point_list(counter,:), points(validity, :), camera_height, cleaned_horizon_height);
         distances(length(distances)+1) = distance;
         out = insertText(out, [100 100], distance + " m", 'FontSize', 24);
 
@@ -103,6 +107,7 @@ while hasFrame(hVideoSrc)
     videoPlayer(out);
     pause(1 / hVideoSrc.FrameRate);
     writeVideo(writerObj, out);
+    counter = counter + 1;
 end 
 
 % close video player and writer
