@@ -75,7 +75,7 @@ for t=1:433 %Loops for every frame of the video
     
         % track where the principal point moves after the applying the
         % stabilizing transformation
-        principal_point_list(length(principal_point_list) + 1, :) = principal_point_origin + Offset;
+        principal_point_list(size(principal_point_list, 1) + 1, :) = principal_point_origin + Offset;
 
         Target = Stabilized(TargetRowIndices, TargetColIndices);
 
