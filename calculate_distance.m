@@ -10,7 +10,7 @@ function distance = calculate_distance(focal_length, principal_point, position, 
     distance_horizon = sqrt((radius_e + camera_height)^2 - radius_e^2); 
 
     % Angle on the image plane between the principal point and the buoy
-    ang_obj_principal_axis = atan(double(abs(norm(principal_point - position))) / focal_length(1));
+    ang_obj_principal_axis = atan(double(abs(principal_point(2) - position(2))) / focal_length(1));
 
     % Angle on the image plane between the principal point and the horizon
     ang_horizon_principal_axis = atan(abs(principal_point(2) - horizon_height) / focal_length(1));
