@@ -72,6 +72,7 @@ a=VideoWriter('calibrated_video.avi');
 %%
 open(a);
 
+%Calibration of each frame of the video using the checkerboard images
 while hasFrame(hVideoSource) %While there are still frames
     raw_image = im2double(readFrame(hVideoSource));
     calibrated_image = undistortImage(raw_image, cameraParams);
