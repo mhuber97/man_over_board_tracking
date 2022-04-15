@@ -53,6 +53,7 @@ while hasFrame(hVideoSrc)
 
     if detected == false
         frame = im2single(readFrame(hVideoSrc));
+        counter = counter + 1;
         [x, y] = re_track_buoy(frame, points(1), points(2));
         if ~isnan(x)
             release(tracker);
@@ -79,6 +80,7 @@ while hasFrame(hVideoSrc)
     % found the buoy we insert a tracker to the next frame 
     if detected || ~isnan(x)
         frame = im2single(readFrame(hVideoSrc));
+        counter = counter + 1;
         [new_points, validity] = tracker(frame);
     end
     
@@ -107,7 +109,6 @@ while hasFrame(hVideoSrc)
     videoPlayer(out);
     pause(1 / hVideoSrc.FrameRate);
     writeVideo(writerObj, out);
-    counter = counter + 1;
 end 
 
 % close video player and writer
