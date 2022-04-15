@@ -38,7 +38,7 @@ y_old = 511;
 tracker = vision.PointTracker('MaxBidirectionalError', 1, 'BlockSize', [9, 9]);
 initialize(tracker, [x, y], first_frame);
 
-undetected = false;
+detected = true;
 height_history = [];
 horizon_height_buffer_size = 10;
 
@@ -48,7 +48,7 @@ while hasFrame(hVideoSrc)
     % valid coordinate, we re-intantiate the point-tracker and insert a
     % marker at the detected position of the next frame.
 
-    if undetected
+    if detected == false
         frame = im2single(readFrame(hVideoSrc));
         [x, y] = re_track_buoy(frame, points(1), points(2));
         if ~isnan(x)
@@ -72,7 +72,7 @@ while hasFrame(hVideoSrc)
 
     % if buoy is either detected or the re-tracking with the blob analysis 
     % found the buoy we insert a tracker to the next frame 
-    if ~undetected || ~isnan(x)
+    if detected || ~isnan(x)
         frame = im2single(readFrame(hVideoSrc));
         [new_points, validity] = tracker(frame);
     end
@@ -90,12 +90,12 @@ while hasFrame(hVideoSrc)
         distance = calculate_distance(focal_length, principal_point, points(validity, :), camera_height, cleaned_horizon_height);
         out = insertText(out, [100 100], distance + " m", 'FontSize', 24);
 
-        undetected = false;
+        detected = true;
     else 
         % if buoy is not detected we insert a text indicating this.
         disp("not detected");
         out = insertText(frame, [100 100], "No Buoy Found", 'FontSize', 24);
-        undetected = true;
+        detected = false;
     end
 
     videoPlayer(out);
