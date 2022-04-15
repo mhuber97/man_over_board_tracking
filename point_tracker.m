@@ -28,11 +28,8 @@ readFrame(hVideoSrc);readFrame(hVideoSrc);readFrame(hVideoSrc);readFrame(hVideoS
 first_frame = im2single(readFrame(hVideoSrc));
 
 % Approximated initial coordinates of the buoy
-x_old = 667;
-y_old = 511;
-
-% Detect the buoy in the area of interest
-[x, y] = re_track_buoy(first_frame, x_old, y_old);
+x = 667;
+y = 511;
 
 % initialize point tracker
 tracker = vision.PointTracker('MaxBidirectionalError', 1, 'BlockSize', [9, 9]);
@@ -112,13 +109,23 @@ end
 release(videoPlayer);
 close(writerObj);
 
+%%
+
 % create scatter plot of the measured distances
 x_arr = linspace(1, length(distances), length(distances));
-figure; hold on; 
+figure; hold on;
 scatter(x_arr, distances);
+
+% Linear regression to plot the distance trend
+coefficients = polyfit(x_arr, distances, 1);
+fittedY = polyval(coefficients, x_arr);
+
+% Do the plotting:
+plot(x_arr, fittedY, 'rs-', 'LineWidth', 3, 'MarkerSize', 0.5);
+
 title('Distance measurement over the video');
 xlabel('Iteration');
-ylabel('Measured distance in m');
+ylabel('Measured distance (m)');
 
 
 function [x, y] = re_track_buoy(frame, x_old, y_old)
