@@ -1,4 +1,4 @@
-function [height] = gethorizonheight(frame)
+function [height] = gethorizonheight(frame, buoy_x)
     % Since the video was stabilized before, we crop the frame to avoid
     % edges of the frame to be detected as the horizon. Thus, we define a
     % border that defines the main part of the image that we want to
@@ -55,5 +55,11 @@ function [height] = gethorizonheight(frame)
 
     end
     % Take height of the center of the line
-    height = (longest_line(1, 2) + longest_line(2,2))/2 + border; 
+    
+    % calculate linear function of horizon to detect horizon height
+    % directly above buoy
+    m = (longest_line(2, 2) - longest_line(1,2)) / (longest_line(2,1) - longest_line(1,1));
+    b = longest_line(2,2) - (m * longest_line(2,1)) + border;
+    
+    height = m * buoy_x + b;
 end

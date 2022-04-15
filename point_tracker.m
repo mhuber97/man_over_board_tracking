@@ -42,6 +42,8 @@ detected = true;
 height_history = [];
 horizon_height_buffer_size = 10;
 
+distances = [];
+
 while hasFrame(hVideoSrc)
     % If in the previous iteration the buoy was not detected by the point
     % tracker, we use blob analysis to re-track it. If this gives us a
@@ -57,11 +59,13 @@ while hasFrame(hVideoSrc)
 
             out = insertMarker(frame, [x, y], '+', 'Size', 10);
             
-            horizon_height = gethorizonheight(frame);
+            horizon_height = gethorizonheight(frame, x);
             height_history(length(height_history)+1) = horizon_height;
             cleaned_horizon_height = get_stable_horizon(height_history, horizon_height_buffer_size);
             disp(cleaned_horizon_height);
             distance = calculate_distance(focal_length, principal_point, [x, y], camera_height, cleaned_horizon_height);
+            distances(length(distances)+1) = distance;
+            
             out = insertText(out, [100 100], distance + " m", 'FontSize', 24);
 
             videoPlayer(out);
@@ -83,11 +87,12 @@ while hasFrame(hVideoSrc)
         points = new_points;
         out = insertMarker(frame, points(validity, :),'+', 'Size', 10);
         
-        horizon_height = gethorizonheight(frame);
+        horizon_height = gethorizonheight(frame, points(1));
         height_history(length(height_history)+1) = horizon_height;
         cleaned_horizon_height = get_stable_horizon(height_history, horizon_height_buffer_size);
         disp(cleaned_horizon_height);
         distance = calculate_distance(focal_length, principal_point, points(validity, :), camera_height, cleaned_horizon_height);
+        distances(length(distances)+1) = distance;
         out = insertText(out, [100 100], distance + " m", 'FontSize', 24);
 
         detected = true;
@@ -106,6 +111,15 @@ end
 % close video player and writer
 release(videoPlayer);
 close(writerObj);
+
+% create scatter plot of the measured distances
+x_arr = linspace(1, length(distances), length(distances));
+figure; hold on; 
+scatter(x_arr, distances);
+title('Distance measurement over the video');
+xlabel('Iteration');
+ylabel('Measured distance in m');
+
 
 function [x, y] = re_track_buoy(frame, x_old, y_old)
 % This function is responsible for the re-tracking of the buoy if it got
