@@ -15,3 +15,8 @@ This is used in the script [point_tracker.m](./point_tracker.m) to track the buo
 The distance measuring to the buoy is based on the following:
 
 ![Distance calculation overview](distance_calculation.png "Distance Calculation")
+
+
+As one can presume from observing the video, the distance to the buoy decreases over time:
+
+![Distance to the buoy over the video](distance_development.png "Distance Development")
