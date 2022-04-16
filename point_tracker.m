@@ -64,7 +64,6 @@ while hasFrame(hVideoSrc)
             horizon_height = gethorizonheight(frame, x);
             height_history(length(height_history)+1) = horizon_height;
             cleaned_horizon_height = get_stable_horizon_height(height_history, horizon_height_buffer_size);
-            disp(cleaned_horizon_height);
             distance = calculate_distance(focal_length, principal_point_list(counter,:), [x, y], camera_height, cleaned_horizon_height);
             distances(length(distances)+1) = distance;
             
@@ -93,7 +92,6 @@ while hasFrame(hVideoSrc)
         horizon_height = gethorizonheight(frame, points(1));
         height_history(length(height_history)+1) = horizon_height;
         cleaned_horizon_height = get_stable_horizon_height(height_history, horizon_height_buffer_size);
-        disp(cleaned_horizon_height);
         distance = calculate_distance(focal_length, principal_point_list(counter,:), points(validity, :), camera_height, cleaned_horizon_height);
         distances(length(distances)+1) = distance;
         out = insertText(out, [100 100], distance + " m", 'FontSize', 24);

@@ -18,5 +18,12 @@ function plot_distances(distances)
     xlabel('Iteration');
     ylabel('Measured distance (m)');
 
+    sum = 0;
+    for i=1:length(distances)
+        sum = sum + abs(distances(i) - (coefficients(1)*i + coefficients(2))).^2;
+    end
+    
+    standard_deviation = sqrt(sum / length(distances));
+    disp("Standard deviation of the distances to the linear regression model: " + standard_deviation);
 end
 
